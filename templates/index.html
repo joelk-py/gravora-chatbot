@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GRAVORA AI</title>
+
+<style>
+body {
+    margin: 0;
+    font-family: 'Segoe UI', sans-serif;
+    background: #f5f2ec;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+/* Container */
+.chat-container {
+    width: 95%;
+    max-width: 900px;
+    height: 90vh;
+    background: #fff;
+    border-radius: 25px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+/* Header */
+.header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 15px 20px;
+    background: linear-gradient(135deg, #c9a44c, #e6c97a);
+    color: white;
+    font-size: 20px;
+    font-weight: bold;
+}
+
+/* Logo */
+.logo {
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+}
+
+/* Chat */
+.chat-box {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+}
+
+/* Message Row */
+.message {
+    display: flex;
+    align-items: flex-end;
+    margin: 12px 0;
+}
+
+/* Bot left */
+.bot {
+    justify-content: flex-start;
+}
+
+/* User right */
+.user {
+    justify-content: flex-end;
+}
+
+/* Icons */
+.icon {
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    margin: 0 8px;
+}
+
+/* Bubble */
+.bubble {
+    padding: 12px 16px;
+    border-radius: 18px;
+    max-width: 65%;
+    font-size: 14px;
+}
+
+/* Bot Bubble */
+.bot .bubble {
+    background: #f0ece3;
+    color: #333;
+    border-bottom-left-radius: 5px;
+}
+
+/* User Bubble */
+.user .bubble {
+    background: linear-gradient(135deg, #c9a44c, #a67c2d);
+    color: white;
+    border-bottom-right-radius: 5px;
+}
+
+/* Input */
+.input-area {
+    display: flex;
+    padding: 15px;
+    background: #faf7f2;
+}
+
+input {
+    flex: 1;
+    padding: 12px;
+    border-radius: 20px;
+    border: 1px solid #ddd;
+    outline: none;
+}
+
+button {
+    margin-left: 10px;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 20px;
+    background: #c9a44c;
+    color: white;
+    cursor: pointer;
+}
+
+/* Mobile */
+@media(max-width: 600px) {
+    .chat-container {
+        height: 100vh;
+        border-radius: 0;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="chat-container">
+
+    <!-- HEADER -->
+    <div class="header">
+        <img src="/static/logo.png" class="logo">
+        GRAVORA AI
+    </div>
+
+    <!-- CHAT -->
+    <div class="chat-box" id="chatBox">
+
+        <!-- Bot message -->
+        <div class="message bot">
+            <img src="/static/logo.png" class="icon">
+            <div class="bubble">Hello 👋 How can I help you today?</div>
+        </div>
+
+    </div>
+
+    <!-- INPUT -->
+    <div class="input-area">
+        <input type="text" id="userInput" placeholder="Ask anything...">
+        <button onclick="sendMessage()">Send</button>
+    </div>
+
+</div>
+
+<script>
+async function sendMessage() {
+    let input = document.getElementById("userInput");
+    let message = input.value.trim();
+    if (!message) return;
+
+    let chatBox = document.getElementById("chatBox");
+
+    // USER MESSAGE
+    chatBox.innerHTML += `
+        <div class="message user">
+            <div class="bubble">${message}</div>
+            <img src="https://cdn-icons-png.flaticon.com/512/847/847969.png" class="icon">
+        </div>`;
+
+    input.value = "";
+
+    // THINKING
+    chatBox.innerHTML += `
+        <div class="message bot" id="thinking">
+            <img src="/static/logo.png" class="icon">
+            <div class="bubble">Thinking...</div>
+        </div>`;
+
+    chatBox.scrollTop = chatBox.scrollHeight;
+
+    // API CALL
+    let response = await fetch("/chat", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({message: message})
+    });
+
+    let data = await response.json();
+
+    document.getElementById("thinking").remove();
+
+    // BOT MESSAGE
+    chatBox.innerHTML += `
+        <div class="message bot">
+            <img src="/static/logo.png" class="icon">
+            <div class="bubble">${data.reply}</div>
+        </div>`;
+
+    chatBox.scrollTop = chatBox.scrollHeight;
+}
+</script>
+
+</body>
+</html>
