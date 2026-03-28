@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, jsonify
-from google import genai
+import google.generativeai as genai
 import os
 import traceback
 
@@ -11,7 +11,10 @@ API_KEY = os.getenv("GEMINI_API_KEY")
 if not API_KEY:
     raise ValueError("❌ GEMINI_API_KEY not set. Add it in Render Environment Variables.")
 
-client = genai.Client(api_key=API_KEY)
+# ✅ Correct Gemini setup
+genai.configure(api_key=API_KEY)
+
+model = genai.GenerativeModel("gemini-1.5-flash")
 
 
 # 🧠 Memory
@@ -71,10 +74,7 @@ User Query:
 """
 
         # 🤖 Gemini API Call
-        response = client.models.generate_content(
-            model="gemini-2.0-flash",
-            contents=prompt
-        )
+        response = model.generate_content(prompt)
 
         # ✅ Safe response
         if hasattr(response, "text") and response.text:
@@ -86,7 +86,7 @@ User Query:
         print("\n❌ ERROR OCCURRED:")
         print(traceback.format_exc())
 
-        # 🔁 Smart fallback system (VERY IMPORTANT FOR DEMO)
+        # 🔁 Smart fallback system (IMPORTANT FOR DEMO)
         if "full stack" in lower_msg:
             reply = """To become a Full Stack Developer:
 
